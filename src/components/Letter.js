@@ -23,4 +23,11 @@ function Letter({ letterPosition, attemptIndex }) {
   return <div className={`letter ${letterStatus}`}>{letter}</div>;
 }
 
+
+
+
+
+
+
+//test
 export default Letter;
