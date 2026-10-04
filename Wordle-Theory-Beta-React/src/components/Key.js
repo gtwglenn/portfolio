@@ -1,30 +1,36 @@
 import React, { useContext } from "react";
 import { AppContext } from "../App";
 
-function Key({ keyVal, bigKey, disabled }) {
+function Key({ keyValue, isWideKey, disabled }) {
+
   const { gameOver, onSelectLetter, onDelete, onEnter } = useContext(AppContext);
 
-  const selectLetter = () => {
+  const handleKeyClick = () => {
+    
     if (gameOver.gameOver) return;
 
-    if (keyVal === "ENTER") {
+    if (keyValue === "ENTER") {
       onEnter();
-    } else if (keyVal === "DELETE") {
+    } else if (keyValue === "DELETE") {
       onDelete();
     } else {
-      onSelectLetter(keyVal);
+      onSelectLetter(keyValue);
     }
   };
 
   return (
     <button
-      className={`key ${bigKey ? "big-key" : ""} ${disabled ? "disabled-key" : ""}`}
-      onClick={selectLetter}
+      className={`key ${isWideKey ? "big-key" : ""} ${
+        disabled ? "disabled-key" : ""
+      }`}
+      onClick={handleKeyClick}
       type="button"
     >
-      {keyVal === "DELETE" ? "DEL" : keyVal}
+      {keyValue === "DELETE" ? "DEL" : keyValue}
     </button>
   );
 }
 
 export default Key;
+
+// "big-key" --> CSS 

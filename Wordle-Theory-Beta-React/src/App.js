@@ -1,7 +1,12 @@
 import "./App.css";
 import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
-import { createEmptyBoard, generateWordSet, MAX_ATTEMPTS, WORD_LENGTH } from "./Words";
+import {
+  createEmptyBoard,
+  generateWordSet,
+  MAX_ATTEMPTS,
+  WORD_LENGTH,
+} from "./Words";
 import React, { useState, createContext, useEffect } from "react";
 import GameOver from "./components/GameOver";
 
@@ -9,11 +14,18 @@ export const AppContext = createContext();
 
 function App() {
   const [board, setBoard] = useState(createEmptyBoard());
-  const [currAttempt, setCurrAttempt] = useState({ attempt: 0, letter: 0 });
+  const [currentAttempt, setCurrentAttempt] = useState({
+    attempt: 0,
+    letter: 0,
+  });
+  
   const [wordSet, setWordSet] = useState(new Set());
   const [correctWord, setCorrectWord] = useState("");
   const [disabledLetters, setDisabledLetters] = useState([]);
-  const [notice, setNotice] = useState("Decrypt the five-letter access code.");
+  const [notice, setNotice] = useState(
+    "Guess the five-letter word."
+  );
+
   const [gameOver, setGameOver] = useState({
     gameOver: false,
     guessedWord: false,
@@ -22,7 +34,7 @@ function App() {
   const loadPuzzle = () => {
     generateWordSet().then((words) => {
       setWordSet(words.wordSet);
-      setCorrectWord(words.todaysWord.toUpperCase());
+      setCorrectWord(words.targetWord.toUpperCase());
     });
   };
 
@@ -32,64 +44,90 @@ function App() {
 
   const restartGame = () => {
     setBoard(createEmptyBoard());
-    setCurrAttempt({ attempt: 0, letter: 0 });
+    setCurrentAttempt({ attempt: 0, letter: 0 });
     setDisabledLetters([]);
     setGameOver({ gameOver: false, guessedWord: false });
-    setNotice("New encrypted vault loaded. Begin decoding.");
+    setNotice("New puzzle loaded. Start guessing.");
     loadPuzzle();
   };
 
-  const readCurrentGuess = () => board[currAttempt.attempt].join("");
+  const readCurrentGuess = () =>
+    board[currentAttempt.attempt].join("");
 
   const onEnter = () => {
-    if (currAttempt.letter !== WORD_LENGTH) {
-      setNotice(`${WORD_LENGTH - currAttempt.letter} more signal${WORD_LENGTH - currAttempt.letter === 1 ? "" : "s"} needed.`);
+    if (currentAttempt.letter !== WORD_LENGTH) {
+      setNotice(
+        `${WORD_LENGTH - currentAttempt.letter} more letter${
+          WORD_LENGTH - currentAttempt.letter === 1 ? "" : "s"
+        } needed.`
+      );
       return;
     }
 
-    const currWord = readCurrentGuess();
+    const currentGuess = readCurrentGuess();
 
-    if (!wordSet.has(currWord.toLowerCase())) {
-      setNotice("Unknown cipher. Try a valid five-letter word.");
+    if (!wordSet.has(currentGuess.toLowerCase())) {
+      setNotice("Word not found. Try another five-letter word.");
       return;
     }
 
-    if (currWord === correctWord) {
-      setGameOver({ gameOver: true, guessedWord: true });
-      setNotice("Vault unlocked. Access granted.");
+    if (currentGuess === correctWord) {
+      setGameOver({
+        gameOver: true,
+        guessedWord: true,
+      });
+      setNotice("Correct! You solved the word.");
       return;
     }
 
-    if (currAttempt.attempt === MAX_ATTEMPTS - 1) {
-      setGameOver({ gameOver: true, guessedWord: false });
-      setNotice("Lockout triggered. Failed to decrypt cipher.");
+    if (currentAttempt.attempt === MAX_ATTEMPTS - 1) {
+      setGameOver({
+        gameOver: true,
+        guessedWord: false,
+      });
+      setNotice("No attempts remaining.");
       return;
     }
 
-    setCurrAttempt({ attempt: currAttempt.attempt + 1, letter: 0 });
-    setNotice("Pattern logged. Continue the breach.");
+    setCurrentAttempt({
+      attempt: currentAttempt.attempt + 1,
+      letter: 0,
+    });
+
+    setNotice("Guess submitted. Try again.");
   };
 
   const onDelete = () => {
-    if (currAttempt.letter === 0) return;
+    if (currentAttempt.letter === 0) return;
 
-    const newBoard = board.map((row) => [...row]);
-    newBoard[currAttempt.attempt][currAttempt.letter - 1] = "";
+    const updatedBoard = board.map((row) => [...row]);
 
-    setBoard(newBoard);
-    setCurrAttempt({ ...currAttempt, letter: currAttempt.letter - 1 });
+    updatedBoard[currentAttempt.attempt][
+      currentAttempt.letter - 1
+    ] = "";
+
+    setBoard(updatedBoard);
+
+    setCurrentAttempt({
+      ...currentAttempt,
+      letter: currentAttempt.letter - 1,
+    });
   };
 
   const onSelectLetter = (key) => {
-    if (currAttempt.letter >= WORD_LENGTH) return;
+    if (currentAttempt.letter >= WORD_LENGTH) return;
 
-    const newBoard = board.map((row) => [...row]);
-    newBoard[currAttempt.attempt][currAttempt.letter] = key;
+    const updatedBoard = board.map((row) => [...row]);
 
-    setBoard(newBoard);
-    setCurrAttempt({
-      attempt: currAttempt.attempt,
-      letter: currAttempt.letter + 1,
+    updatedBoard[currentAttempt.attempt][
+      currentAttempt.letter
+    ] = key;
+
+    setBoard(updatedBoard);
+
+    setCurrentAttempt({
+      attempt: currentAttempt.attempt,
+      letter: currentAttempt.letter + 1,
     });
   };
 
@@ -97,10 +135,12 @@ function App() {
     <div className="App">
       <main className="terminal-shell">
         <header className="hero-panel">
-          <p className="eyebrow">Project: Cipher Vault</p>
-          <h1>Decode the Lock</h1>
+          <p className="eyebrow">Wordle Theory Beta</p>
+          <h1>Guess the Word</h1>
+
           <p className="hero-copy">
-            Six attempts. Five letters. Use the feedback grid to crack the encrypted passphrase before the vault seals.
+            Six attempts. Five letters. Use the feedback grid to
+            determine the correct word.
           </p>
         </header>
 
@@ -108,8 +148,8 @@ function App() {
           value={{
             board,
             setBoard,
-            currAttempt,
-            setCurrAttempt,
+            currentAttempt,
+            setCurrentAttempt,
             correctWord,
             onSelectLetter,
             onDelete,
@@ -120,12 +160,25 @@ function App() {
             restartGame,
           }}
         >
-          <section className="game-card" aria-label="Cipher Vault game board">
+          <section
+            className="game-card"
+            aria-label="Wordle Theory Beta game board"
+          >
             <div className="status-bar">
               <span>{notice}</span>
-              <span className="attempt-chip">Attempt {Math.min(currAttempt.attempt + 1, MAX_ATTEMPTS)} / {MAX_ATTEMPTS}</span>
+
+              <span className="attempt-chip">
+                Attempt{" "}
+                {Math.min(
+                  currentAttempt.attempt + 1,
+                  MAX_ATTEMPTS
+                )}{" "}
+                / {MAX_ATTEMPTS}
+              </span>
             </div>
+
             <Board />
+
             {gameOver.gameOver ? <GameOver /> : <Keyboard />}
           </section>
         </AppContext.Provider>
