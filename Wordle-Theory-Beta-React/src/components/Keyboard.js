@@ -9,12 +9,19 @@ const keyboardRows = [
 ];
 
 function Keyboard() {
-  const { disabledLetters, gameOver, onSelectLetter, onEnter, onDelete } = useContext(AppContext);
-  const allLetters = keyboardRows.flat();
-      // use .flat() to clean arrays 
+  const {
+    disabledLetters,
+    gameOver,
+    onSelectLetter,
+    onEnter,
+    onDelete,
+  } = useContext(AppContext);
 
-  const handleKeyboard = useCallback(
-    (event) => {
+  const validLetters = keyboardRows.flat();
+
+  // Flatten the keyboard rows into one array for validating physical keyboard input.
+  const handleKeyDown = useCallback( (event) => {
+
       if (gameOver.gameOver) return;
 
       if (event.key === "Enter") {
@@ -28,32 +35,46 @@ function Keyboard() {
       }
 
       const typedLetter = event.key.toUpperCase();
-      if (allLetters.includes(typedLetter)) {
+
+      if (validLetters.includes(typedLetter)) {
         onSelectLetter(typedLetter);
       }
     },
-    [allLetters, gameOver.gameOver, onDelete, onEnter, onSelectLetter]
+    [validLetters, gameOver.gameOver, onDelete, onEnter, onSelectLetter]
   );
 
+  
+  // event listener for each keydown or keystroke 
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyboard);
-    return () => document.removeEventListener("keydown", handleKeyboard);
-  }, [handleKeyboard]);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
 
   return (
     <div className="keyboard" aria-label="On-screen keyboard">
       {keyboardRows.map((row, rowIndex) => (
         <div className="key-line" key={`keyboard-row-${rowIndex}`}>
-          {rowIndex === 2 && <Key keyVal="ENTER" bigKey />}
+          {rowIndex === 2 && <Key keyValue="ENTER" isWideKey />}
+
           {row.map((key) => (
-            <Key key={key} keyVal={key} disabled={disabledLetters.includes(key)} />
+            <Key
+              key={key}
+              keyValue={key}
+              disabled={disabledLetters.includes(key)}
+            />
           ))}
-          {rowIndex === 2 && <Key keyVal="DELETE" bigKey />}
+
+          {rowIndex === 2 && <Key keyValue="DELETE" isWideKey />}
         </div>
       ))}
     </div>
   );
 }
-            // rowIndex creates index of 'keyboardRows' ie rows: 1, 2, 3 
+
+// rowIndex identifies which row of keyboardRows is currently being rendered.
 
 export default Keyboard;

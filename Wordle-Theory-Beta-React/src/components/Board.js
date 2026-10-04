@@ -10,8 +10,8 @@ function Board() {
           {Array.from({ length: WORD_LENGTH }).map((_, letterIndex) => (
             <Letter
               key={`${attemptIndex}-${letterIndex}`}
-              letterPos={letterIndex}
-              attemptVal={attemptIndex}
+              letterPosition={letterIndex}
+              attemptIndex={attemptIndex}
             />
           ))}
         </div>

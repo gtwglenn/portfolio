@@ -1,21 +1,42 @@
 import React, { useContext, useEffect } from "react";
 import { AppContext } from "../App";
 
-function Letter({ letterPos, attemptVal }) {
-  const { board, setDisabledLetters, currAttempt, correctWord } = useContext(AppContext);
-  const letter = board[attemptVal][letterPos];
-  const submitted = currAttempt.attempt > attemptVal;
-  const correct = correctWord[letterPos] === letter;
-  const almost = !correct && letter !== "" && correctWord.includes(letter);
-  const letterState = submitted ? (correct ? "correct" : almost ? "almost" : "error") : "";
+function Letter({ letterPosition, attemptIndex }) {
+  
+  const { board, setDisabledLetters, currentAttempt, correctWord } =
+    useContext(AppContext);
+
+  const letter = board[attemptIndex][letterPosition];
+  const isSubmitted = currentAttempt.attempt > attemptIndex;
+  const isCorrect = correctWord[letterPosition] === letter;
+  const isPresent =
+    !isCorrect && letter !== "" && correctWord.includes(letter);
+
+  const letterStatus = isSubmitted
+    ? isCorrect
+      ? "correct"
+      : isPresent
+      ? "almost"
+      : "error"
+    : "";
 
   useEffect(() => {
-    if (submitted && letter !== "" && !correct && !almost) {
-      setDisabledLetters((prev) => (prev.includes(letter) ? prev : [...prev, letter]));
+    if (isSubmitted && letter !== "" && !isCorrect && !isPresent) {
+      setDisabledLetters((previousLetters) =>
+        previousLetters.includes(letter)
+          ? previousLetters
+          : [...previousLetters, letter]
+      );
     }
-  }, [submitted, letter, correct, almost, setDisabledLetters]);
+  }, [
+    isSubmitted,
+    letter,
+    isCorrect,
+    isPresent,
+    setDisabledLetters,
+  ]);
 
-  return <div className={`letter ${letterState}`}>{letter}</div>;
+  return <div className={`letter ${letterStatus}`}>{letter}</div>;
 }
 
 export default Letter;
